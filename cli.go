@@ -30,7 +30,8 @@ func checkArgs(args []string) []string {
     _, err := url.ParseRequestURI(v)
 
     if err != nil {
-      continue
+      fmt.Printf("%s is not a valid url!\n", v)
+      os.Exit(2)
     }
 
     filtered = append(filtered, v)

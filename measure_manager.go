@@ -38,7 +38,7 @@ func StartMeasuring(websites []*Website) {
       }
 
       case <-done: {
-        go printAll(websites)
+        printAll(websites)
       }
     }
   }

@@ -65,10 +65,10 @@ func (w *Website) Print() {
 
 	if latency.Avg == 0 {
 		fmt.Printf(
-			"%s: Latency - Avg: %.2f ms, Max: %d ms, Min: %d ms | Size - Avg: %.2f bytes, Max: %d bytes, Min: %d bytes | Success: %d / %d\n",
+			"%s: Latency - Min: %d ms, Avg: %.2f ms, Max: %d ms | Size - Min: %d bytes, Avg: %.2f bytes, Max: %d bytes | Success: %d / %d\n",
 			w.Url,
-			latency.Avg, 0, 0,
-			size.Avg, 0, 0,
+			0, latency.Avg, 0,
+			0, latency.Avg, 0,
 			requests.SuccesCount, requests.RequestCount(),
 		)
 
@@ -76,10 +76,10 @@ func (w *Website) Print() {
 	}
 
 	fmt.Printf(
-		"%s: Latency - Avg: %.2f ms, Max: %d ms, Min: %d ms | Size - Avg: %.2f bytes, Max: %d bytes, Min: %d bytes | Success: %d / %d\n",
+		"%s: Latency - Min: %d ms, Avg: %.2f ms, Max: %d ms | Size - Min: %d bytes, Avg: %.2f bytes, Max: %d bytes | Success: %d / %d\n",
 		w.Url,
-		latency.Avg, latency.Max, latency.Min,
-		size.Avg, size.Max, size.Min,
+		latency.Min, latency.Avg, latency.Max,
+		size.Min, size.Avg, size.Max,
 		requests.SuccesCount, requests.RequestCount(),
 	)
 }
