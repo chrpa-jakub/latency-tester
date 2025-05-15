@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/inancgumus/screen"
 )
 
 func StartMeasuring(websites []*Website) {
@@ -46,7 +47,7 @@ func StartMeasuring(websites []*Website) {
 func MeasureAllAsync(websites []*Website, done chan<-*Website, wg *sync.WaitGroup) {
   for _, website := range websites {
     wg.Add(1)
-    time.Sleep(time.Millisecond*50)
+    time.Sleep(time.Millisecond*100)
     go func() {
       defer wg.Done()
       done<-website.MeasureRequest()
@@ -55,7 +56,8 @@ func MeasureAllAsync(websites []*Website, done chan<-*Website, wg *sync.WaitGrou
 }
 
 func printAll(websites []*Website) {
-  fmt.Print("\033[H\033[2J")
+  screen.Clear()
+  screen.MoveTopLeft()
   for _, website := range websites {
     website.Print()
   }
