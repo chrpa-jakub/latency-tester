@@ -57,15 +57,33 @@ func (r *requestInfo) RequestCount() uint64 {
 	return r.SuccesCount + r.FailCount
 }
 
-func (w *Website) Print() {
 
-	if(w.LatencyData.Avg == 0) {
-		fmt.Printf("%s: Latency - Avg: %.2f, Max: %d, Min: %d Size - Avg: %.2f, Max: %d, Min: %d %d/%d \n", w.Url, w.LatencyData.Avg, 0, 0, w.SizeData.Avg, 0, 0, w.RequestInfo.SuccesCount, w.RequestInfo.RequestCount())
+func (w *Website) Print() {
+	latency := w.LatencyData
+	size := w.SizeData
+	requests := w.RequestInfo
+
+	if latency.Avg == 0 {
+		fmt.Printf(
+			"%s: Latency - Avg: %.2f ms, Max: %d ms, Min: %d ms | Size - Avg: %.2f bytes, Max: %d bytes, Min: %d bytes | Success: %d / %d\n",
+			w.Url,
+			latency.Avg, 0, 0,
+			size.Avg, 0, 0,
+			requests.SuccesCount, requests.RequestCount(),
+		)
+
 		return
 	}
 
-	fmt.Printf("%s: Latency - Avg: %.2f, Max: %d, Min: %d Size - Avg: %.2f, Max: %d, Min: %d %d/%d \n", w.Url, w.LatencyData.Avg, w.LatencyData.Max, w.LatencyData.Min, w.SizeData.Avg, w.SizeData.Max, w.SizeData.Min, w.RequestInfo.SuccesCount, w.RequestInfo.RequestCount())
+	fmt.Printf(
+		"%s: Latency - Avg: %.2f ms, Max: %d ms, Min: %d ms | Size - Avg: %.2f bytes, Max: %d bytes, Min: %d bytes | Success: %d / %d\n",
+		w.Url,
+		latency.Avg, latency.Max, latency.Min,
+		size.Avg, size.Max, size.Min,
+		requests.SuccesCount, requests.RequestCount(),
+	)
 }
+
 
 func (w *Website) addMeasurements(size int, time int) {
 	w.RequestInfo.SuccesCount++
@@ -79,15 +97,9 @@ func (d *dataInfo) addData(data int, count float32) {
 	d.Avg = ((count-1) * d.Avg + float32(data))/count
 }
 
-func (w *Website) MeasureRequestAsync(done chan<-bool) {
-	w.MeasureRequest()
-	done <- true
-}
-
 func (w *Website) MeasureRequest() *Website {
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	defer w.Print()
 
 	startTime := time.Now()
 	resp, err := w.httpClient.Get(w.Url)
@@ -96,6 +108,8 @@ func (w *Website) MeasureRequest() *Website {
 		w.RequestInfo.FailCount++
 		return w
 	}
+
+	defer resp.Body.Close()
 
 	measuredTime := int(time.Since(startTime).Milliseconds())
 	body, err := ioutil.ReadAll(resp.Body)

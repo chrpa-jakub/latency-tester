@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -13,18 +14,26 @@ func StartMeasuring(websites []*Website) {
   signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
   ticker := time.NewTicker(5 * time.Second)
-  defer ticker.Stop()
 
-  done := make(chan bool)
+  var wg sync.WaitGroup
+
+  done := make(chan *Website)
 
   for {
     select {
       case <-ticker.C: {
-        go MeasureAllAsync(websites, done)
+        go func() {
+          MeasureAllAsync(websites, done, &wg)
+        }()
       }
 
       case <-stop: {
-        return
+        go func() {
+          ticker.Stop()
+          wg.Wait()
+          printAll(websites)
+          os.Exit(0)
+        }()
       }
 
       case <-done: {
@@ -34,9 +43,14 @@ func StartMeasuring(websites []*Website) {
   }
 }
 
-func MeasureAllAsync(websites []*Website, done chan<-bool) {
+func MeasureAllAsync(websites []*Website, done chan<-*Website, wg *sync.WaitGroup) {
   for _, website := range websites {
-    go website.MeasureRequestAsync(done)
+    wg.Add(1)
+    time.Sleep(time.Millisecond*50)
+    go func() {
+      defer wg.Done()
+      done<-website.MeasureRequest()
+    }()
   } 
 }
 

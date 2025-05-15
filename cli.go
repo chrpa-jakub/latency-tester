@@ -1,39 +1,42 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"strings"
-	"time"
+  "fmt"
+  "net/http"
+  "os"
+  "strings"
+  "time"
 )
 
 func checkArgs(args []string) []string {
   if(len(args) < 2) {
-    panic(fmt.Sprintf("Usage: %s [url]", args[0]))
+    fmt.Fprintf(os.Stderr, "Usage: %s [url]\n", args[0])
+    os.Exit(1)
   }
 
   filtered := []string{}
   for _, v := range args[1:] {
-      if v != "" && v != " " {
+    v = strings.TrimSpace(v)
 
-        if !strings.HasPrefix(v, "http://") && !strings.HasPrefix(v, "https://") {
-          filtered = append(filtered, "http://"+v)
-          continue
-        }
-
-      filtered = append(filtered, v)
+    if v == "" {
+      continue
     }
 
+    if !strings.HasPrefix(v, "http://") && !strings.HasPrefix(v, "https://") {
+    v = "http://"+v
   }
 
-  return filtered
+  filtered = append(filtered, v)
+}
+
+return filtered
 }
 
 func ParseArgs(args []string) []*Website {
   websiteUrls := checkArgs(args)
 
-
   websites := []*Website{}
+
   httpClient := &http.Client{
     Timeout: 10*time.Second,
   }
