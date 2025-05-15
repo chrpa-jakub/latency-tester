@@ -1,4 +1,4 @@
-module github.com/chrpa-jakub/latency-tester
+module github.com/chrpa-jakub/request-stats
 
 go 1.24.1
 
