@@ -1,11 +1,12 @@
 package main
 
 import (
-  "fmt"
-  "net/http"
-  "os"
-  "strings"
-  "time"
+	"fmt"
+	"net/http"
+	"net/url"
+	"os"
+	"strings"
+	"time"
 )
 
 func checkArgs(args []string) []string {
@@ -23,17 +24,38 @@ func checkArgs(args []string) []string {
     }
 
     if !strings.HasPrefix(v, "http://") && !strings.HasPrefix(v, "https://") {
-    v = "http://"+v
+      v = "http://"+v
+    }
+
+    _, err := url.ParseRequestURI(v)
+
+    if err != nil {
+      continue
+    }
+
+    filtered = append(filtered, v)
   }
 
-  filtered = append(filtered, v)
+  return filtered
 }
 
-return filtered
+func removeDuplicates(slice []string) []string {
+    seen := make(map[string]struct{})
+    result := []string{}
+
+    for _, v := range slice {
+        if _, found := seen[v]; !found {
+            seen[v] = struct{}{}
+            result = append(result, v)
+        }
+    }
+    return result
 }
+
 
 func ParseArgs(args []string) []*Website {
-  websiteUrls := checkArgs(args)
+  websiteUrlsDuplicate := checkArgs(args)
+  websiteUrls := removeDuplicates(websiteUrlsDuplicate)
 
   websites := []*Website{}
 
