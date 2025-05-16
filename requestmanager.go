@@ -1,17 +1,18 @@
 package main
 
 import (
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
-	"time"
+  "os"
+  "os/signal"
+  "sync"
+  "syscall"
+  "time"
 
-	"github.com/inancgumus/screen"
+  "github.com/inancgumus/screen"
 )
 
 func StartMeasuring(websites []*Website) {
   stop := make(chan os.Signal, 1)
+  stopped := false
   signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
   ticker := time.NewTicker(5 * time.Second)
@@ -29,6 +30,12 @@ func StartMeasuring(websites []*Website) {
       }
 
       case <-stop: {
+        if(stopped) {
+          printAll(websites)
+          os.Exit(0)
+        }
+
+        stopped = true;
         go func() {
           ticker.Stop()
           wg.Wait()
@@ -38,7 +45,9 @@ func StartMeasuring(websites []*Website) {
       }
 
       case <-done: {
-        printAll(websites)
+        if (!stopped) {
+          printAll(websites)
+        }
       }
     }
   }
